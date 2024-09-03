@@ -304,7 +304,13 @@ endif
 # https://github.com/operator-framework/community-operators/blob/7f1438c/docs/packaging-operator.md#updating-your-existing-operator
 .PHONY: catalog-build
 catalog-build: opm ## Build a catalog image.
-	$(OPM) index add --container-tool $(CONTAINER_TOOL) --mode semver --tag $(CATALOG_IMG) -i quay.io/operator-framework/opm:$(OPM_VERSION)-ppc64le --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
+	$(eval TMP_DIR := $(shell mktemp -d))
+	$(eval CATALOG_DOCKERFILE := $(TMP_DIR).Dockerfile)
+	@envsubst < catalog/preamble_config_template.json > catalog/preamble_config.json
+	cp catalog/preamble_config.json $(TMP_DIR)/rsct-operator-catalog.json
+	$(OPM) render $(BUNDLE_IMGS) >> $(TMP_DIR)/rsct-operator-catalog.json
+	$(OPM) generate dockerfile $(TMP_DIR) -i quay.io/operator-framework/opm:$(OPM_VERSION)-ppc64le
+	$(CONTAINER_TOOL) build -f $(CATALOG_DOCKERFILE) -t $(CATALOG_IMG)
 
 # Push the catalog image.
 .PHONY: catalog-push
