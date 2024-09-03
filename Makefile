@@ -66,6 +66,9 @@ else
 GOBIN=$(shell go env GOBIN)
 endif
 
+ARCH=$(shell go env GOARCH)
+OS=$(shell go env GOOS)
+
 # CONTAINER_TOOL defines the container tool to be used for building images.
 # Be aware that the target commands are only tested with Docker which is
 # scaffolded by default. However, you might want to replace it to use other
@@ -246,8 +249,7 @@ ifeq (, $(shell which operator-sdk 2>/dev/null))
 	@{ \
 	set -e ;\
 	mkdir -p $(dir $(OPERATOR_SDK)) ;\
-	OS=$(shell go env GOOS) && ARCH=$(shell go env GOARCH) && \
-	curl -sSLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$${OS}_$${ARCH} ;\
+	curl -sSLo $(OPERATOR_SDK) https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$(OS)_$(ARCH) ;\
 	chmod +x $(OPERATOR_SDK) ;\
 	}
 else
@@ -278,8 +280,7 @@ ifeq (,$(shell which opm 2>/dev/null))
 	@{ \
 	set -e ;\
 	mkdir -p $(dir $(OPM)) ;\
-	OS=$(shell go env GOOS) && ARCH=$(shell go env GOARCH) && \
-	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/$(OPM_VERSION)/$${OS}-$${ARCH}-opm ;\
+	curl -sSLo $(OPM) https://github.com/operator-framework/operator-registry/releases/download/$(OPM_VERSION)/$(OS)-$(ARCH)-opm ;\
 	chmod +x $(OPM) ;\
 	}
 else
@@ -304,7 +305,14 @@ endif
 # https://github.com/operator-framework/community-operators/blob/7f1438c/docs/packaging-operator.md#updating-your-existing-operator
 .PHONY: catalog-build
 catalog-build: opm ## Build a catalog image.
-	$(OPM) index add --container-tool $(CONTAINER_TOOL) --mode semver --tag $(CATALOG_IMG) -i quay.io/operator-framework/opm:$(OPM_VERSION)-ppc64le --bundles $(BUNDLE_IMGS) $(FROM_INDEX_OPT)
+	$(shell mkdir rsct-temp)
+	$(eval TMP_DIR := rsct-temp)
+	@envsubst < catalog/preamble_config_template.json > $(TMP_DIR)/rsct-operator-catalog.json
+	$(OPM) render $(BUNDLE_IMGS) >> $(TMP_DIR)/rsct-operator-catalog.json
+	$(OPM) generate dockerfile $(TMP_DIR) -i quay.io/operator-framework/opm:${OPM_VERSION}-${ARCH}
+	cat catalog/Dockerfile_final_stage >> $(TMP_DIR).Dockerfile
+	$(CONTAINER_TOOL) build -f $(TMP_DIR).Dockerfile -t $(CATALOG_IMG)
+	rm -rf $(TMP_DIR)
 
 # Push the catalog image.
 .PHONY: catalog-push

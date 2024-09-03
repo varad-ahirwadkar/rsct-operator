@@ -1,0 +1,10 @@
+FROM --platform=linux/ppc64le quay.io/operator-framework/opm
+
+ADD rsct-temp /configs
+COPY --from=0 /tmp/cache /tmp/cache
+
+# Configure the entrypoint and command
+ENTRYPOINT ["/bin/opm"]
+CMD ["serve", "/configs", "--cache-dir=/tmp/cache"]
+
+LABEL operators.operatorframework.io.index.configs.v1=/configs
