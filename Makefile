@@ -312,6 +312,7 @@ catalog-build: opm ## Build a catalog image.
 	@envsubst < catalog/preamble_config_template.json > $(TMP_DIR)/rsct-operator-catalog.json
 	$(OPM) render $(BUNDLE_IMGS) >> $(TMP_DIR)/rsct-operator-catalog.json
 	$(OPM) generate dockerfile $(TMP_DIR) -i quay.io/operator-framework/opm:${OPM_VERSION}-${ARCH}
+	echo "FROM quay.io/operator-framework/opm:$(OPM_VERSION)-ppc64le" >> $(TMP_DIR).Dockerfile
 	cat catalog/Dockerfile_final_stage >> $(TMP_DIR).Dockerfile
 	$(CONTAINER_TOOL) build -f $(TMP_DIR).Dockerfile -t $(CATALOG_IMG)
 	rm -rf $(TMP_DIR)
