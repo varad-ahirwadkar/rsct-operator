@@ -1,3 +1,4 @@
+FROM --platform=linux/ppc64le quay.io/operator-framework/opm
 
 ADD rsct-temp /configs
 COPY --from=0 /tmp/cache /tmp/cache
