@@ -6,7 +6,7 @@ metadata:
     capabilities: Basic Install
     categories: OpenShift Optional
     containerImage: ghcr.io/ocp-power-automation/rsct-operator:latest
-    description: Deploys RSCT daemonset on all nodes of an OpenShift cluster
+    description: Deploys RSCT daemonset on all ppc64le architecture nodes of an OpenShift or Kubernetes cluster.
     repository: https://github.com/ocp-power-automation/rsct-operator
     support: IBM
   labels:
@@ -23,8 +23,38 @@ spec:
       kind: RSCT
       name: rscts.rsct.ibm.com
       version: v1alpha1
-  description: Deploys custom resource RSCT on all nodes of an OpenShift cluster.
-  displayName: RSCT Operator for IBM Power Virtual Server
+  description: |- 
+    RSCT Operator
+    Deploys RSCT daemonset on all ppc64le architecture nodes of an OpenShift or Kubernetes cluster.
+    
+    ### Prerequisite for OpenShift cluster
+    Create a catalog source using `quay.io/operatorhubio/catalog:latest` in `openshift-marketplace` namespace.
+
+    ```
+    kubectl create -f -<<EOF
+    apiVersion: operators.coreos.com/v1alpha1
+    kind: CatalogSource
+    metadata:
+      name: operatorhubio-catalog
+      namespace: openshift-marketplace
+    spec:
+      displayName: Community Operators
+      image: quay.io/operatorhubio/catalog:latest
+      publisher: OperatorHub.io
+      sourceType: grpc
+    EOF
+    ```
+    ### For Operator deployment run this command:
+    ```
+    kubectl create -f https://operatorhub.io/install/rsct-operator.yaml
+    ```
+    This Operator will be installed in the **my-rsct-operator** namespace
+
+    ### Verfiy Operator deployment
+    ```
+    kubectl get csv -n my-rsct-operator
+    ```
+  displayName: RSCT Operator for IBM Power
   icon:
   - base64data: PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTguNTEgMjU4LjUxIj48ZGVmcz48c3R5bGU+LmNscy0xe2ZpbGw6I2QxZDFkMTt9LmNscy0ye2ZpbGw6IzhkOGQ4Zjt9PC9zdHlsZT48L2RlZnM+PHRpdGxlPkFzc2V0IDQ8L3RpdGxlPjxnIGlkPSJMYXllcl8yIiBkYXRhLW5hbWU9IkxheWVyIDIiPjxnIGlkPSJMYXllcl8xLTIiIGRhdGEtbmFtZT0iTGF5ZXIgMSI+PHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMTI5LjI1LDIwQTEwOS4xLDEwOS4xLDAsMCwxLDIwNi40LDIwNi40LDEwOS4xLDEwOS4xLDAsMSwxLDUyLjExLDUyLjExLDEwOC40NSwxMDguNDUsMCwwLDEsMTI5LjI1LDIwbTAtMjBoMEM1OC4xNiwwLDAsNTguMTYsMCwxMjkuMjVIMGMwLDcxLjA5LDU4LjE2LDEyOS4yNiwxMjkuMjUsMTI5LjI2aDBjNzEuMDksMCwxMjkuMjYtNTguMTcsMTI5LjI2LTEyOS4yNmgwQzI1OC41MSw1OC4xNiwyMDAuMzQsMCwxMjkuMjUsMFoiLz48cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xNzcuNTQsMTAzLjQxSDE0MS42NkwxNTQuOSw2NS43NmMxLjI1LTQuNC0yLjMzLTguNzYtNy4yMS04Ljc2SDEwMi45M2E3LjMyLDcuMzIsMCwwLDAtNy40LDZsLTEwLDY5LjYxYy0uNTksNC4xNywyLjg5LDcuODksNy40LDcuODloMzYuOUwxMTUuNTUsMTk3Yy0xLjEyLDQuNDEsMi40OCw4LjU1LDcuMjQsOC41NWE3LjU4LDcuNTgsMCwwLDAsNi40Ny0zLjQ4TDE4NCwxMTMuODVDMTg2Ljg2LDEwOS4yNCwxODMuMjksMTAzLjQxLDE3Ny41NCwxMDMuNDFaIi8+PC9nPjwvZz48L3N2Zz4=
     mediatype: image/svg+xml
@@ -48,11 +78,13 @@ spec:
   - rmc
   - power
   links:
-  - name: Rsct Operator
+  - name: RSCT Operator
     url: https://github.com/ocp-power-automation/rsct-operator
   maintainers:
   - email: mjturek@us.ibm.com
     name: Michael Turek
+  - email: varad.ahirwadkar1@ibm.com
+    name: Varad Ahirwadkar
   maturity: alpha
   minKubeVersion: 1.25.0
   provider:
