@@ -310,10 +310,11 @@ catalog-build: opm ## Build a catalog image.
 	echo "FROM quay.io/operator-framework/opm:$(OPM_VERSION)-ppc64le" >> $(TMP_DIR).Dockerfile
 	cat catalog/Dockerfile_final_stage >> $(TMP_DIR).Dockerfile
     ## Building catalog image
-	$(CONTAINER_TOOL) build -f $(TMP_DIR).Dockerfile -t $(CATALOG_IMG) .
-	rm -rf $(TMP_DIR)
+	$(CONTAINER_TOOL) build -f $(TMP_DIR).Dockerfile -t $(CATALOG_IMG) -t $(IMAGE_TAG_BASE)-catalog:latest .
+	rm -rf $(TMP_DIR)*
 
 # Push the catalog image.
 .PHONY: catalog-push
 catalog-push: ## Push a catalog image.
+	$(MAKE) docker-push IMG=$(IMAGE_TAG_BASE)-catalog
 	$(MAKE) docker-push IMG=$(CATALOG_IMG)
